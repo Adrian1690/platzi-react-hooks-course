@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from 'react'
+import { useState, useEffect, useReducer, useMemo } from 'react'
 
 const initialState = {
     favorites: []
@@ -19,6 +19,7 @@ const favoriteReducer = (state, action) => {
 const Characters = () => {
     const [characters, setCharacters] = useState([]);
     const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         fetch('https://rickandmortyapi.com/api/character/')
@@ -30,7 +31,20 @@ const Characters = () => {
         dispatch({type: 'ADD_TO_FAVORITE', payload: favorite})
     }
 
-    console.log(favorites)
+    const handleSearch = e => {
+        setSearch(e.target.value)
+    }
+
+    //const filteredUsers = characters.filter(user => {
+        //return user.name.toLowerCase().includes(search.toLowerCase());
+    //})
+    const filteredUsers = useMemo(() =>
+        characters.filter(user => {
+            return user.name.toLowerCase().includes(search.toLowerCase());
+        }),
+        [characters, search]
+    )
+
     return (
         <div className="Characters">
             {
@@ -40,8 +54,12 @@ const Characters = () => {
                     </li>
                 ))
             }
+
+            <div className="Search">
+                <input type="text" value={search} onChange={handleSearch}/>
+            </div>
             {
-                characters.map(character => (
+                filteredUsers.map(character => (
                     <div className="item" key={character.id}>
                         <h2>{character.name}</h2>
                         <button type="button" onClick={() => handleClick(character)}>
